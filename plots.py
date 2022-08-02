@@ -51,13 +51,20 @@ pyplot.savefig("cdf.png")
 
 # Plot conditional wait time
 pyplot.figure(figsize=(12, 6))
-data = list(get_data([0.6, 1.2]))
-for j, hatch, (n, sigma, ts, cs) in zip([0, 1], ["/", "\\"], data):
-    lo_qs = cs + (1 - cs) * 0.25
-    hi_qs = cs + (1 - cs) * 0.75
+data = list(get_data([0.6, .8, 1., 1.2, 1.4]))
+for j, (n, sigma, ts, cs) in enumerate(data):
+    lo_qs = cs + (1 - cs) * 0.45
+    mn_qs = cs + (1 - cs) * 0.5
+    hi_qs = cs + (1 - cs) * 0.55
     lo = numpy.exp(scipy.stats.norm.ppf(lo_qs, scale=sigma))
     hi = numpy.exp(scipy.stats.norm.ppf(hi_qs, scale=sigma))
-    pyplot.fill_between(ts, lo, hi, color="none", hatch=hatch, edgecolor="C%d" % j, label="$ \sigma = %.1f $" % sigma)
+    mn = numpy.exp(scipy.stats.norm.ppf(mn_qs, scale=sigma))
+    turn_ix = numpy.argmin(mn-ts)
+    turnpoint = ts[turn_ix]
+    print("sigma = %.1f Spent turnpoint = %3.1f%%, Expected true time = %5.1f%%" % (sigma, 100*turnpoint, 100*mn[turn_ix]))
+    pyplot.fill_between(ts, lo-ts, hi-ts, alpha=.1)
+    pyplot.plot([turnpoint], [numpy.min(mn-ts)], "o", markersize=10)
+    pyplot.plot(ts, mn-ts, color="C%d" % j, label="$ \sigma = %.1f $" % sigma)
 
 pyplot.legend()
 set_xscale()
